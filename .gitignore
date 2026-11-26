@@ -1,0 +1,78 @@
+# ================================
+# OS & IDE / Editor
+# ================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+.vscode/
+!.vscode/extensions.json
+.classpath
+.project
+.settings/
+
+# ================================
+# Environment & Secrets
+# ================================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# ================================
+# Backend (Java / Spring Boot / Maven / Gradle)
+# ================================
+backend/target/
+backend/build/
+backend/.gradle/
+backend/out/
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# ================================
+# Frontend Web (React / Vite / Node)
+# ================================
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ================================
+# Mobile (Flutter / Dart)
+# ================================
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/debug/
+mobile/android/app/profile/
+mobile/android/app/release/
+
+# ================================
+# Logs & Temp
+# ================================
+logs/
+*.log
+tmp/

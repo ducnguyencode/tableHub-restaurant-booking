@@ -1,0 +1,391 @@
+erDiagram
+    %% =========================================================
+    %% 1. TAI KHOAN, XAC THUC & THIET BI (K1)
+    %% =========================================================
+    USERS ||--o{ REFRESH_TOKENS : "duy_tri_phien"
+    USERS ||--o{ USER_DEVICES : "nhan_push_fcm"
+    USERS ||--o{ NOTIFICATIONS : "nhan_thong_bao"
+
+    %% =========================================================
+    %% 2. THUONG HIEU, NHA HANG, THUC DON & UU DAI (K2)
+    %% =========================================================
+    USERS ||--o{ BRANDS : "so_huu_chuoi"
+    BRANDS o|--o{ RESTAURANTS : "co_chi_nhanh"
+    RESTAURANTS ||--o{ RESTAURANT_IMAGES : "co_anh"
+    RESTAURANTS ||--o{ MENU_CATEGORIES : "co_danh_muc_mon"
+    MENU_CATEGORIES ||--o{ MENU_ITEMS : "chua_mon_an"
+    RESTAURANTS ||--o{ MENU_ITEMS : "ban_mon"
+    RESTAURANTS ||--o{ PROMOTIONS : "ap_dung_uu_dai"
+
+    %% =========================================================
+    %% 3. NHAN SU, CA MO CUA, LICH LE TET, SO DO BAN & HANG CHO (K4)
+    %% =========================================================
+    USERS ||--o{ RESTAURANT_MEMBERS : "lam_viec_tai"
+    RESTAURANTS ||--o{ RESTAURANT_MEMBERS : "co_nhan_su"
+    RESTAURANTS ||--o{ STAFF_INVITATIONS : "moi_nhan_su"
+    USERS ||--o{ STAFF_INVITATIONS : "gui_loi_moi"
+    RESTAURANTS ||--o{ OPENING_HOURS : "co_ca_thuong_nhat"
+    RESTAURANTS ||--o{ SPECIAL_SCHEDULES : "ghi_de_ngay_le_dong_cua"
+    RESTAURANTS ||--o{ DINING_TABLES : "co_ban"
+    RESTAURANTS ||--o{ WAITLIST_ENTRIES : "quan_ly_hang_cho"
+    RESERVATIONS o|--o| WAITLIST_ENTRIES : "chuyen_thanh_walkin"
+
+    %% =========================================================
+    %% 4. DAT BAN, GHEP BAN, DAT MON TRUOC & LICH SU (K3)
+    %% =========================================================
+    USERS o|--o{ RESERVATIONS : "khach_dat_online"
+    RESTAURANTS ||--o{ RESERVATIONS : "nhan_luot_dat"
+    PROMOTIONS o|--o{ RESERVATIONS : "gan_uu_dai"
+    RESERVATIONS ||--|{ RESERVATION_TABLES : "giu_mot_hoac_nhieu_ban"
+    DINING_TABLES ||--o{ RESERVATION_TABLES : "duoc_xep_vao_don"
+    RESERVATIONS ||--o{ RESERVATION_ITEMS : "dat_mon_truoc"
+    MENU_ITEMS ||--o{ RESERVATION_ITEMS : "nam_trong_preorder"
+    RESERVATIONS ||--|{ RESERVATION_STATUS_HISTORY : "ghi_vet_trang_thai"
+    USERS o|--o{ RESERVATION_STATUS_HISTORY : "nguoi_thao_tac"
+
+    %% =========================================================
+    %% 5. TIEN COC, DOI SOAT & DANH GIA XAC THUC (K5)
+    %% =========================================================
+    RESERVATIONS ||--o{ PAYMENT_TRANSACTIONS : "phat_sinh_coc_hoan_tien"
+    RESTAURANTS ||--o{ RESTAURANT_LEDGER_ENTRIES : "ghi_so_cai_doi_soat"
+    PAYMENT_TRANSACTIONS o|--o{ RESTAURANT_LEDGER_ENTRIES : "hach_toan_giao_dich"
+    RESTAURANTS ||--o{ SETTLEMENT_PAYOUTS : "yeu_cau_rut_doi_soat"
+    SETTLEMENT_PAYOUTS o|--o{ RESTAURANT_LEDGER_ENTRIES : "khau_tru_so_du"
+    RESERVATIONS ||--o| REVIEWS : "danh_gia_sau_completed"
+    RESTAURANTS ||--o{ REVIEWS : "nhan_danh_gia"
+    USERS ||--o{ REVIEWS : "viet_danh_gia"
+
+    %% =========================================================
+    %% CHI TIET 24 BANG DU LIEU
+    %% =========================================================
+
+    USERS {
+        bigint id PK
+        string full_name
+        string email UK
+        string password_hash
+        string phone
+        string avatar_url
+        string platform_role "USER hoac ADMIN"
+        string status "ACTIVE hoac LOCKED"
+        int no_show_count_30d " >= 3 tu_dong_bat_buoc_coc"
+        boolean force_deposit_flag
+        datetime created_at
+        datetime updated_at
+    }
+
+    REFRESH_TOKENS {
+        bigint id PK
+        bigint user_id FK
+        string token_hash UK
+        string device_info
+        boolean revoked
+        datetime expires_at
+        datetime created_at
+    }
+
+    USER_DEVICES {
+        bigint id PK
+        bigint user_id FK
+        string fcm_token UK
+        string platform "WEB ANDROID IOS"
+        datetime last_active_at
+    }
+
+    BRANDS {
+        bigint id PK
+        bigint owner_id FK
+        string name
+        string slug UK
+        string logo_url
+        string description
+        string status "ACTIVE hoac INACTIVE"
+        datetime created_at
+    }
+
+    RESTAURANTS {
+        bigint id PK
+        bigint brand_id FK "nullable neu_quan_doc_lap"
+        string name
+        string slug UK
+        string description
+        string address
+        string district
+        string city
+        decimal latitude
+        decimal longitude
+        string phone
+        string cuisine_type
+        bigint price_min
+        bigint price_max
+        int slot_step_minutes "15 hoac 30"
+        int estimated_turn_minutes "60 90 120 180 ngam_tinh_quay_vong_ban"
+        boolean show_turn_limit_note "true voi_buffet_gioi_han_gio"
+        int min_advance_minutes "default 30"
+        int max_advance_days "default 30"
+        int free_cancel_cutoff_minutes "default 120"
+        int grace_period_minutes "default 15 truoc_no_show"
+        string confirmation_mode "AUTO hoac MANUAL"
+        string deposit_policy "NONE LARGE_PARTY ALWAYS PREORDER_ONLY"
+        int deposit_min_guests
+        string deposit_amount_type "FIXED_ORDER PER_GUEST PREORDER_PERCENT"
+        bigint deposit_value
+        string bank_code
+        string bank_account_no
+        string bank_account_name
+        decimal avg_rating
+        int review_count
+        string status "PENDING_APPROVAL ACTIVE REJECTED SUSPENDED"
+        string status_reason
+        datetime created_at
+        datetime updated_at
+    }
+
+    RESTAURANT_IMAGES {
+        bigint id PK
+        bigint restaurant_id FK
+        string image_url
+        string cloudinary_public_id
+        string image_type "COVER SPACE MENU FOOD"
+        boolean is_cover
+        int sort_order
+        datetime created_at
+    }
+
+    MENU_CATEGORIES {
+        bigint id PK
+        bigint restaurant_id FK
+        string name
+        int sort_order
+        boolean is_active
+    }
+
+    MENU_ITEMS {
+        bigint id PK
+        bigint restaurant_id FK
+        bigint category_id FK
+        string name
+        string description
+        bigint price
+        string image_url
+        boolean is_signature
+        boolean is_available_preorder
+        string status "AVAILABLE OUT_OF_STOCK HIDDEN"
+        datetime created_at
+    }
+
+    PROMOTIONS {
+        bigint id PK
+        bigint restaurant_id FK
+        string title
+        string description
+        string promo_type "DISCOUNT_PERCENT DISCOUNT_FIXED FREE_ITEM"
+        bigint discount_value
+        string applicable_days "VD 1,2,3,4,5"
+        time start_time
+        time end_time
+        int min_guests
+        date valid_from
+        date valid_until
+        boolean is_active
+    }
+
+    RESTAURANT_MEMBERS {
+        bigint id PK
+        bigint restaurant_id FK
+        bigint user_id FK
+        string member_role "OWNER hoac STAFF"
+        string status "ACTIVE hoac INACTIVE"
+        datetime created_at
+    }
+
+    STAFF_INVITATIONS {
+        bigint id PK
+        bigint restaurant_id FK
+        string email
+        string invited_role "OWNER hoac STAFF"
+        string token_hash UK
+        bigint invited_by FK
+        string status "PENDING ACCEPTED EXPIRED REVOKED"
+        datetime expires_at
+        datetime created_at
+    }
+
+    OPENING_HOURS {
+        bigint id PK
+        bigint restaurant_id FK
+        int day_of_week "1 thu_hai den 7 chu_nhat"
+        string shift_name "VD Ca_trua Ca_toi"
+        time opens_at
+        time closes_at
+    }
+
+    SPECIAL_SCHEDULES {
+        bigint id PK
+        bigint restaurant_id FK
+        date specific_date
+        boolean is_closed "true neu_dong_cua_dot_xuat_nghi_le"
+        time opens_at "nullable"
+        time closes_at "nullable"
+        boolean force_deposit "true bat_buoc_coc_ngay_le"
+        bigint deposit_override_per_guest "nullable"
+        string note
+    }
+
+    DINING_TABLES {
+        bigint id PK
+        bigint restaurant_id FK
+        string area_name "VD Tang_1 Phong_VIP San_vuon"
+        string table_code "UK theo restaurant_id"
+        int min_party_size "tranh_1_khach_chiem_ban_VIP"
+        int capacity
+        boolean is_combinable
+        int pos_x "toa_do_so_do_ban"
+        int pos_y "toa_do_so_do_ban"
+        boolean is_active
+    }
+
+    WAITLIST_ENTRIES {
+        bigint id PK
+        bigint restaurant_id FK
+        string queue_number "VD Q015"
+        string contact_name
+        string contact_phone
+        int guest_count
+        string status "WAITING CALLED SEATED SKIPPED CANCELLED"
+        bigint seated_reservation_id FK "nullable"
+        string note
+        bigint created_by FK
+        datetime created_at
+        datetime called_at
+        datetime seated_at
+    }
+
+    RESERVATIONS {
+        bigint id PK
+        string booking_code UK
+        string qr_token UK "quet_QR_check_in"
+        bigint customer_id FK "nullable voi WALK_IN"
+        bigint restaurant_id FK
+        bigint promotion_id FK "nullable"
+        string source "ONLINE hoac WALK_IN"
+        string contact_name "nullable voi WALK_IN"
+        string contact_phone "nullable voi WALK_IN"
+        int guest_count
+        datetime starts_at
+        datetime ends_at "gio_quay_vong_du_kien"
+        string status "PENDING_PAYMENT PENDING_APPROVAL CONFIRMED CHECKED_IN COMPLETED CANCELLED NO_SHOW EXPIRED REJECTED"
+        bigint deposit_required_amount
+        datetime payment_expires_at "giu_ban_tam_15p"
+        datetime approval_expires_at "han_duyet_tay"
+        bigint preorder_total_estimate
+        string note
+        string internal_staff_note
+        datetime checked_in_at
+        datetime completed_at
+        datetime cancelled_at
+        string cancel_reason
+        datetime created_at
+        datetime updated_at
+    }
+
+    RESERVATION_TABLES {
+        bigint id PK
+        bigint restaurant_id FK
+        bigint reservation_id FK "FK_ghep restaurant_id_reservation_id"
+        bigint table_id FK "FK_ghep restaurant_id_table_id"
+        bigint assigned_by FK "nullable_neu_he_thong_tu_xep"
+        datetime assigned_at
+    }
+
+    RESERVATION_ITEMS {
+        bigint id PK
+        bigint reservation_id FK
+        bigint menu_item_id FK
+        string item_name_snapshot
+        bigint unit_price_snapshot
+        int quantity
+        string item_note
+    }
+
+    RESERVATION_STATUS_HISTORY {
+        bigint id PK
+        bigint reservation_id FK
+        bigint changed_by FK "nullable_khi_SYSTEM_cronjob"
+        string actor_type "CUSTOMER STAFF OWNER ADMIN SYSTEM"
+        string from_status
+        string to_status
+        string reason
+        datetime changed_at
+    }
+
+    PAYMENT_TRANSACTIONS {
+        bigint id PK
+        bigint reservation_id FK
+        bigint restaurant_id FK
+        string provider "PAYOS VNPAY MANUAL_REFUND"
+        string transaction_type "DEPOSIT_PAYMENT REFUND"
+        string order_code UK
+        bigint amount
+        string status "PENDING PAID FAILED CANCELLED REFUND_PENDING REFUNDED FORFEITED"
+        string qr_code_payload
+        string checkout_url
+        string provider_txn_id
+        string refund_bank_info
+        datetime paid_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    RESTAURANT_LEDGER_ENTRIES {
+        bigint id PK
+        bigint restaurant_id FK
+        bigint reservation_id FK "nullable"
+        bigint payment_transaction_id FK "nullable"
+        bigint payout_id FK "nullable"
+        string entry_type "DEPOSIT_RELEASED_COMPLETED DEPOSIT_FORFEITED_NOSHOW PLATFORM_FEE PAYOUT_WITHDRAWAL"
+        bigint amount "so_duong_hoac_am"
+        bigint balance_after
+        string description
+        datetime created_at
+    }
+
+    SETTLEMENT_PAYOUTS {
+        bigint id PK
+        bigint restaurant_id FK
+        bigint amount
+        string status "REQUESTED APPROVED_PAID REJECTED"
+        string transfer_proof_url
+        bigint processed_by FK "nullable"
+        datetime processed_at
+        datetime created_at
+    }
+
+    REVIEWS {
+        bigint id PK
+        bigint reservation_id FK,UK "1_don_COMPLETED_1_review"
+        bigint restaurant_id FK
+        bigint customer_id FK
+        int food_rating "1_den_5"
+        int space_rating "1_den_5"
+        int service_rating "1_den_5"
+        decimal overall_rating
+        string comment
+        string image_urls_json
+        string owner_reply
+        datetime replied_at
+        string status "VISIBLE HIDDEN_BY_ADMIN"
+        datetime created_at
+    }
+
+    NOTIFICATIONS {
+        bigint id PK
+        bigint recipient_user_id FK
+        bigint restaurant_id FK "nullable"
+        bigint reservation_id FK "nullable"
+        string type
+        string title
+        string body
+        boolean is_read
+        datetime created_at
+    }
