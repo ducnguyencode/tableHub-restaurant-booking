@@ -1,8 +1,8 @@
-# Module K4 — Restaurant Operations, Floor Plan, Schedule & Waitlist (Đợt 1 Độc Lập)
+# K4 Module — Restaurant Operations, Floor Plan, Schedule & Waitlist (Batch 1)
 
-Package `com.tablehub.operations` chứa toàn bộ 6 bảng do K4 sở hữu (`DINING_TABLES`, `OPENING_HOURS`, `SPECIAL_SCHEDULES`, `RESTAURANT_MEMBERS`, `STAFF_INVITATIONS`, `WAITLIST_ENTRIES`), không chạm vào `pom.xml` hay file cấu hình chung của K1.
+Package `com.tablehub.operations` owns the 6 operational tables (`DINING_TABLES`, `OPENING_HOURS`, `SPECIAL_SCHEDULES`, `RESTAURANT_MEMBERS`, `STAFF_INVITATIONS`, `WAITLIST_ENTRIES`), isolated from `pom.xml` and shared configurations owned by K1.
 
-## Tích hợp khi K1 & K3 hoàn tất Phase 1
-1. **K1** implement `RestaurantAccessPort` (gắn với SecurityContext & `RestaurantSecurityGuard`) và `NotificationMailPort` (gắn với `JavaMailSender`), đồng thời map `OperationsException` trong `@RestControllerAdvice` (`GlobalExceptionHandler`).
-2. **K3** implement `ReservationImpactPort` (kiểm tra đơn `CHECKED_IN` / `CONFIRMED` tương lai cho quy tắc E05, E27).
-3. **Đợt 2 (`P2-T4`):** Sau khi K3 hoàn tất `ReservationCommandService`, K4 bổ sung `LiveBoardController` nối các thao tác `WALK_IN`, `check-in-by-qr`, `extend`, `reassign-tables`, `complete`, `no-show`.
+## Integration Checklist (After K1 & K3 Complete Phase 1)
+1. **K1** implements `RestaurantAccessPort` (wired to Spring Security & `RestaurantSecurityGuard`) and `NotificationMailPort` (wired to `JavaMailSender`), and maps `OperationsException` inside `@RestControllerAdvice` (`GlobalExceptionHandler`).
+2. **K3** implements `ReservationImpactPort` (checking active `CHECKED_IN` and upcoming `CONFIRMED` reservations for rules E05 and E27).
+3. **Batch 2 (`P2-T4`):** Once K3 completes `ReservationCommandService`, K4 adds `LiveBoardController` for `WALK_IN`, `check-in-by-qr`, `extend`, `reassign-tables`, `complete`, and `no-show`.

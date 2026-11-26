@@ -56,7 +56,7 @@ public class WaitlistService {
     public WaitlistResponse addToWaitlist(Long restaurantId, CreateWaitlistRequest req) {
         Long staffId = accessPort.getCurrentUserId();
         if (!accessPort.isUserStaffOrOwner(restaurantId, staffId)) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Bạn không thuộc nhân sự của nhà hàng này");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "User is not a member of this restaurant");
         }
 
         LocalDate today = LocalDate.now(VN_ZONE);
@@ -84,7 +84,7 @@ public class WaitlistService {
         requireStaffOrOwner(restaurantId);
         WaitlistEntry entry = getEntryOrThrow(restaurantId, entryId);
         if (entry.getStatus() != WaitlistEntry.WaitlistStatus.WAITING) {
-            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Chỉ gọi được khách đang WAITING");
+            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Only WAITING entries can be called");
         }
         entry.setStatus(WaitlistEntry.WaitlistStatus.CALLED);
         entry.setCalledAt(OffsetDateTime.now(VN_ZONE));
@@ -97,7 +97,7 @@ public class WaitlistService {
         WaitlistEntry entry = getEntryOrThrow(restaurantId, entryId);
         if (entry.getStatus() != WaitlistEntry.WaitlistStatus.WAITING
             && entry.getStatus() != WaitlistEntry.WaitlistStatus.CALLED) {
-            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Phiếu chờ không còn hiệu lực xếp bàn");
+            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Waitlist entry is no longer active");
         }
         entry.setStatus(WaitlistEntry.WaitlistStatus.SEATED);
         entry.setSeatedReservationId(req.seatedReservationId());
@@ -111,7 +111,7 @@ public class WaitlistService {
         WaitlistEntry entry = getEntryOrThrow(restaurantId, entryId);
         if (entry.getStatus() != WaitlistEntry.WaitlistStatus.WAITING
             && entry.getStatus() != WaitlistEntry.WaitlistStatus.CALLED) {
-            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Không thể bỏ qua phiếu ở trạng thái hiện tại");
+            throw new OperationsException(HttpStatus.CONFLICT, "INVALID_WAITLIST_STATUS", "Cannot skip entry in current status");
         }
         entry.setStatus(WaitlistEntry.WaitlistStatus.SKIPPED);
         return WaitlistResponse.from(waitlistRepository.save(entry));
@@ -119,12 +119,12 @@ public class WaitlistService {
 
     private WaitlistEntry getEntryOrThrow(Long restaurantId, Long entryId) {
         return waitlistRepository.findByIdAndRestaurantId(entryId, restaurantId)
-            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "WAITLIST_NOT_FOUND", "Không tìm thấy phiếu hàng chờ"));
+            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "WAITLIST_NOT_FOUND", "Waitlist entry not found"));
     }
 
     private void requireStaffOrOwner(Long restaurantId) {
         if (!accessPort.isUserStaffOrOwner(restaurantId, accessPort.getCurrentUserId())) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Bạn không thuộc nhân sự của nhà hàng này");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "User is not a member of this restaurant");
         }
     }
 }

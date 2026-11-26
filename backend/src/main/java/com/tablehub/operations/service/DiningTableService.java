@@ -47,7 +47,7 @@ public class DiningTableService {
             throw new OperationsException(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_PARTY_RANGE",
-                "Số khách tối thiểu (minPartySize) không được lớn hơn sức chứa bàn"
+                "Minimum party size cannot exceed table capacity"
             );
         }
 
@@ -56,7 +56,7 @@ public class DiningTableService {
             throw new OperationsException(
                 HttpStatus.CONFLICT,
                 "DUPLICATE_TABLE_CODE",
-                "Mã bàn " + normalizedCode + " đã tồn tại trong nhà hàng"
+                "Table code " + normalizedCode + " already exists in this restaurant"
             );
         }
 
@@ -82,12 +82,12 @@ public class DiningTableService {
             throw new OperationsException(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_PARTY_RANGE",
-                "Số khách tối thiểu không được lớn hơn sức chứa bàn"
+                "Minimum party size cannot exceed table capacity"
             );
         }
 
         DiningTable table = tableRepository.findByIdAndRestaurantIdForUpdate(tableId, restaurantId)
-            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "TABLE_NOT_FOUND", "Không tìm thấy bàn"));
+            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "TABLE_NOT_FOUND", "Table not found"));
 
         String normalizedCode = req.tableCode().trim().toUpperCase();
         if (!table.getTableCode().equalsIgnoreCase(normalizedCode)
@@ -95,20 +95,20 @@ public class DiningTableService {
             throw new OperationsException(
                 HttpStatus.CONFLICT,
                 "DUPLICATE_TABLE_CODE",
-                "Mã bàn " + normalizedCode + " đã tồn tại trong nhà hàng"
+                "Table code " + normalizedCode + " already exists in this restaurant"
             );
         }
 
         boolean willDisable = Boolean.TRUE.equals(table.getIsActive()) && Boolean.FALSE.equals(req.isActive());
         boolean capacityReduced = req.capacity() < table.getCapacity();
 
-        // Rào E27: Không cho tắt bàn hoặc giảm sức chứa nếu đang có khách ngồi hoặc vướng đơn tương lai
+        // Guardrail E27: Prevent disabling table or reducing capacity when occupied or impacting future bookings
         if (willDisable || capacityReduced) {
             if (reservationImpactPort.hasActiveCheckedInOnTable(restaurantId, tableId)) {
                 throw new OperationsException(
                     HttpStatus.CONFLICT,
                     "TABLE_CURRENTLY_OCCUPIED",
-                    "Bàn đang có khách CHECKED_IN, không thể tắt bàn hoặc giảm sức chứa lúc này"
+                    "Table currently has a CHECKED_IN reservation and cannot be disabled or resized"
                 );
             }
             long conflicting = reservationImpactPort.countFutureConfirmedConflictingTable(
@@ -118,19 +118,19 @@ public class DiningTableService {
                 throw new OperationsException(
                     HttpStatus.CONFLICT,
                     "TABLE_HAS_FUTURE_RESERVATIONS",
-                    "Có " + conflicting + " đơn đặt bàn tương lai bị ảnh hưởng. Vui lòng đổi bàn cho các đơn này trước khi lưu."
+                    conflicting + " upcoming confirmed reservation(s) are affected. Please reassign tables before saving."
                 );
             }
         }
 
-        // Rào E20: Không cho tắt bàn active cuối cùng khi nhà hàng đang ACTIVE
+        // Guardrail E20: Prevent disabling the last active table while restaurant is ACTIVE
         if (willDisable && accessPort.isRestaurantActive(restaurantId)) {
             long activeCount = tableRepository.countByRestaurantIdAndIsActiveTrue(restaurantId);
             if (activeCount <= 1) {
                 throw new OperationsException(
                     HttpStatus.UNPROCESSABLE_ENTITY,
                     "LAST_ACTIVE_TABLE",
-                    "Nhà hàng đang ACTIVE phải có ít nhất 1 bàn hoạt động"
+                    "An ACTIVE restaurant must retain at least one active dining table"
                 );
             }
         }
@@ -150,14 +150,14 @@ public class DiningTableService {
     private void requireOwner(Long restaurantId) {
         Long userId = accessPort.getCurrentUserId();
         if (!accessPort.isUserOwner(restaurantId, userId)) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Chỉ OWNER nhà hàng mới có quyền thực hiện");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only restaurant OWNER can perform this action");
         }
     }
 
     private void requireStaffOrOwner(Long restaurantId) {
         Long userId = accessPort.getCurrentUserId();
         if (!accessPort.isUserStaffOrOwner(restaurantId, userId)) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Bạn không thuộc nhân sự của nhà hàng này");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "User is not a member of this restaurant");
         }
     }
 }

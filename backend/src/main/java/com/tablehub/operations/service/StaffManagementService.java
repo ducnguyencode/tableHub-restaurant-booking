@@ -65,7 +65,7 @@ public class StaffManagementService {
     public InvitationResponse inviteStaff(Long restaurantId, InviteStaffRequest req) {
         Long inviterId = accessPort.getCurrentUserId();
         if (!accessPort.isUserOwner(restaurantId, inviterId)) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Chỉ OWNER mới được mời nhân viên");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only restaurant OWNER can invite staff");
         }
 
         String normalizedEmail = req.email().trim().toLowerCase();
@@ -76,7 +76,7 @@ public class StaffManagementService {
             throw new OperationsException(
                 HttpStatus.CONFLICT,
                 "INVITATION_ALREADY_PENDING",
-                "Email " + normalizedEmail + " đang có lời mời chờ xác nhận"
+                "A pending invitation already exists for " + normalizedEmail
             );
         }
 
@@ -99,16 +99,16 @@ public class StaffManagementService {
     public MemberResponse acceptInvitation(String rawToken) {
         Long currentUserId = accessPort.getCurrentUserId();
         StaffInvitation invitation = invitationRepository.findByTokenHash(sha256(rawToken))
-            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "INVITATION_NOT_FOUND", "Lời mời không tồn tại"));
+            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "INVITATION_NOT_FOUND", "Invitation not found"));
 
         if (invitation.getStatus() != StaffInvitation.InvitationStatus.PENDING) {
-            throw new OperationsException(HttpStatus.CONFLICT, "INVITATION_NOT_PENDING", "Lời mời đã được sử dụng hoặc thu hồi");
+            throw new OperationsException(HttpStatus.CONFLICT, "INVITATION_NOT_PENDING", "Invitation has already been used or revoked");
         }
 
         if (OffsetDateTime.now(VN_ZONE).isAfter(invitation.getExpiresAt())) {
             invitation.setStatus(StaffInvitation.InvitationStatus.EXPIRED);
             invitationRepository.save(invitation);
-            throw new OperationsException(HttpStatus.GONE, "INVITATION_EXPIRED", "Lời mời đã hết hạn (48 giờ)");
+            throw new OperationsException(HttpStatus.GONE, "INVITATION_EXPIRED", "Invitation has expired (48-hour limit)");
         }
 
         RestaurantMember member = memberRepository
@@ -131,10 +131,10 @@ public class StaffManagementService {
     public MemberResponse updateMember(Long restaurantId, Long memberId, UpdateMemberRequest req) {
         requireOwner(restaurantId);
 
-        // Khóa danh sách thành viên active để rào E28 (bảo vệ OWNER cuối cùng)
+        // Lock active members to enforce E28 (protect the last active OWNER)
         List<RestaurantMember> activeMembers = memberRepository.findActiveMembersForUpdate(restaurantId);
         RestaurantMember target = memberRepository.findByIdAndRestaurantId(memberId, restaurantId)
-            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "MEMBER_NOT_FOUND", "Không tìm thấy nhân sự"));
+            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "MEMBER_NOT_FOUND", "Restaurant member not found"));
 
         boolean targetWasActiveOwner = target.getStatus() == RestaurantMember.MemberStatus.ACTIVE
             && target.getMemberRole() == RestaurantMember.MemberRole.OWNER;
@@ -149,7 +149,7 @@ public class StaffManagementService {
                 throw new OperationsException(
                     HttpStatus.UNPROCESSABLE_ENTITY,
                     "LAST_ACTIVE_OWNER",
-                    "Không thể xóa hoặc hạ quyền OWNER cuối cùng của nhà hàng"
+                    "Cannot deactivate or demote the last active OWNER of the restaurant"
                 );
             }
         }
@@ -161,7 +161,7 @@ public class StaffManagementService {
 
     private void requireOwner(Long restaurantId) {
         if (!accessPort.isUserOwner(restaurantId, accessPort.getCurrentUserId())) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Chỉ OWNER nhà hàng mới có quyền quản lý nhân sự");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only restaurant OWNER can manage staff");
         }
     }
 

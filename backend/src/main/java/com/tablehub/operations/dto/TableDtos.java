@@ -10,19 +10,19 @@ public final class TableDtos {
     private TableDtos() {}
 
     public record CreateTableRequest(
-        @NotBlank(message = "Khu vực bàn không được để trống")
+        @NotBlank(message = "Area name is required")
         @Size(max = 100)
         String areaName,
 
-        @NotBlank(message = "Mã bàn không được để trống")
+        @NotBlank(message = "Table code is required")
         @Size(max = 30)
         String tableCode,
 
-        @Min(value = 1, message = "Số khách tối thiểu phải >= 1")
+        @Min(value = 1, message = "Minimum party size must be >= 1")
         Integer minPartySize,
 
-        @NotNull(message = "Sức chứa bàn là bắt buộc")
-        @Min(value = 1, message = "Sức chứa bàn phải >= 1")
+        @NotNull(message = "Table capacity is required")
+        @Min(value = 1, message = "Table capacity must be >= 1")
         Integer capacity,
 
         Boolean isCombinable,
@@ -31,20 +31,20 @@ public final class TableDtos {
     ) {}
 
     public record UpdateTableRequest(
-        @NotBlank(message = "Khu vực bàn không được để trống")
+        @NotBlank(message = "Area name is required")
         @Size(max = 100)
         String areaName,
 
-        @NotBlank(message = "Mã bàn không được để trống")
+        @NotBlank(message = "Table code is required")
         @Size(max = 30)
         String tableCode,
 
         @NotNull
-        @Min(value = 1, message = "Số khách tối thiểu phải >= 1")
+        @Min(value = 1, message = "Minimum party size must be >= 1")
         Integer minPartySize,
 
         @NotNull
-        @Min(value = 1, message = "Sức chứa bàn phải >= 1")
+        @Min(value = 1, message = "Table capacity must be >= 1")
         Integer capacity,
 
         @NotNull Boolean isCombinable,

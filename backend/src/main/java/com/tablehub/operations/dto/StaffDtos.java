@@ -11,11 +11,11 @@ public final class StaffDtos {
     private StaffDtos() {}
 
     public record InviteStaffRequest(
-        @NotBlank(message = "Email nhân viên không được để trống")
-        @Email(message = "Email không đúng định dạng")
+        @NotBlank(message = "Staff email is required")
+        @Email(message = "Invalid email format")
         String email,
 
-        @NotNull(message = "Vai trò mời là bắt buộc (OWNER hoặc STAFF)")
+        @NotNull(message = "Invited role is required (OWNER or STAFF)")
         RestaurantMember.MemberRole invitedRole
     ) {}
 

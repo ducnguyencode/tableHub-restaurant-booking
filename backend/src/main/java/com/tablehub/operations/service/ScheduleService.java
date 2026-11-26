@@ -62,7 +62,7 @@ public class ScheduleService {
                 throw new OperationsException(
                     HttpStatus.CONFLICT,
                     "OVERLAPPING_SHIFT",
-                    "Ca mới (" + req.opensAt() + "–" + req.closesAt() + ") bị chồng lấn với ca " + shift.getShiftName()
+                    "New shift (" + req.opensAt() + "-" + req.closesAt() + ") overlaps with existing shift " + shift.getShiftName()
                 );
             }
         }
@@ -82,13 +82,13 @@ public class ScheduleService {
         requireOwner(restaurantId);
 
         OpeningHour shift = openingHourRepository.findByIdAndRestaurantId(shiftId, restaurantId)
-            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "SHIFT_NOT_FOUND", "Không tìm thấy ca mở cửa"));
+            .orElseThrow(() -> new OperationsException(HttpStatus.NOT_FOUND, "SHIFT_NOT_FOUND", "Opening shift not found"));
 
         if (accessPort.isRestaurantActive(restaurantId) && openingHourRepository.countByRestaurantId(restaurantId) <= 1) {
             throw new OperationsException(
                 HttpStatus.UNPROCESSABLE_ENTITY,
                 "LAST_OPENING_SHIFT",
-                "Nhà hàng đang ACTIVE phải giữ lại ít nhất 1 ca mở cửa"
+                "An ACTIVE restaurant must retain at least one opening shift"
             );
         }
 
@@ -99,7 +99,7 @@ public class ScheduleService {
             throw new OperationsException(
                 HttpStatus.CONFLICT,
                 "SHIFT_HAS_FUTURE_RESERVATIONS",
-                "Không thể xóa ca này vì đang có " + impacted + " đơn đặt bàn tương lai trong khung giờ"
+                "Cannot delete shift because " + impacted + " upcoming reservation(s) fall within this time range"
             );
         }
 
@@ -126,17 +126,17 @@ public class ScheduleService {
                 throw new OperationsException(
                     HttpStatus.BAD_REQUEST,
                     "INVALID_SPECIAL_HOURS",
-                    "Khi mở cửa ngày đặc biệt, opensAt phải nhỏ hơn closesAt"
+                    "When open on a special date, opensAt must be strictly before closesAt"
                 );
             }
         } else {
-            // Rào E05: Cảnh báo nếu đóng cửa đột xuất vào ngày đang có đơn tương lai
+            // Guardrail E05: Block sudden closure if future confirmed reservations exist on that date
             long impacted = reservationImpactPort.countFutureConfirmedOnDate(restaurantId, req.specificDate());
             if (impacted > 0) {
                 throw new OperationsException(
                     HttpStatus.CONFLICT,
                     "DATE_HAS_FUTURE_RESERVATIONS",
-                    "Ngày " + req.specificDate() + " đang có " + impacted + " đơn đã xác nhận. Vui lòng hủy/hoàn cọc các đơn này trước khi đóng cửa."
+                    "Date " + req.specificDate() + " has " + impacted + " confirmed reservation(s). Please cancel/refund them before closing."
                 );
             }
         }
@@ -162,20 +162,20 @@ public class ScheduleService {
             throw new OperationsException(
                 HttpStatus.BAD_REQUEST,
                 "INVALID_SHIFT_TIME",
-                "Giờ mở cửa (opensAt) phải trước giờ đóng cửa (closesAt) trong cùng ngày"
+                "opensAt must be strictly before closesAt within the same day"
             );
         }
     }
 
     private void requireOwner(Long restaurantId) {
         if (!accessPort.isUserOwner(restaurantId, accessPort.getCurrentUserId())) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Chỉ OWNER nhà hàng mới có quyền thực hiện");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Only restaurant OWNER can perform this action");
         }
     }
 
     private void requireStaffOrOwner(Long restaurantId) {
         if (!accessPort.isUserStaffOrOwner(restaurantId, accessPort.getCurrentUserId())) {
-            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "Bạn không thuộc nhân sự của nhà hàng này");
+            throw new OperationsException(HttpStatus.FORBIDDEN, "FORBIDDEN", "User is not a member of this restaurant");
         }
     }
 }

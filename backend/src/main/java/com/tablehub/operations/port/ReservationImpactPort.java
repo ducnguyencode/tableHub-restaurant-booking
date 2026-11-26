@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
- * Port giao tiếp với module Đặt bàn (K3) để kiểm tra đơn tương lai bị ảnh hưởng (E05, E27)
- * trước khi cho phép sửa/tắt bàn hoặc thu hẹp/đóng cửa lịch hoạt động.
+ * Port for communicating with the Booking module (K3) to check impacted future
+ * reservations (rules E05, E27) before modifying tables or schedules.
  */
 public interface ReservationImpactPort {
 

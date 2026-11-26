@@ -11,18 +11,18 @@ public final class ScheduleDtos {
 
     public record UpsertOpeningHourRequest(
         @NotNull
-        @Min(value = 1, message = "dayOfWeek phải từ 1 (Thứ Hai) đến 7 (Chủ Nhật)")
-        @Max(value = 7, message = "dayOfWeek phải từ 1 (Thứ Hai) đến 7 (Chủ Nhật)")
+        @Min(value = 1, message = "dayOfWeek must be between 1 (Monday) and 7 (Sunday)")
+        @Max(value = 7, message = "dayOfWeek must be between 1 (Monday) and 7 (Sunday)")
         Integer dayOfWeek,
 
-        @NotBlank(message = "Tên ca không được để trống (VD: Ca trưa, Ca tối)")
+        @NotBlank(message = "Shift name is required (e.g., Lunch Shift, Dinner Shift)")
         @Size(max = 60)
         String shiftName,
 
-        @NotNull(message = "Giờ mở cửa là bắt buộc")
+        @NotNull(message = "Opening time is required")
         LocalTime opensAt,
 
-        @NotNull(message = "Giờ đóng cửa là bắt buộc")
+        @NotNull(message = "Closing time is required")
         LocalTime closesAt
     ) {}
 
@@ -43,7 +43,7 @@ public final class ScheduleDtos {
     }
 
     public record UpsertSpecialScheduleRequest(
-        @NotNull(message = "Ngày áp dụng là bắt buộc")
+        @NotNull(message = "Specific date is required")
         LocalDate specificDate,
 
         @NotNull Boolean isClosed,

@@ -15,7 +15,7 @@ public class OpeningHour {
     private Long restaurantId;
 
     /**
-     * Chuẩn ISO-8601: 1 (Thứ Hai) đến 7 (Chủ Nhật).
+     * ISO-8601 day of week: 1 (Monday) through 7 (Sunday).
      */
     @Column(name = "day_of_week", nullable = false)
     private Integer dayOfWeek;

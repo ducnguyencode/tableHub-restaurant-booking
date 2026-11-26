@@ -1,7 +1,7 @@
 package com.tablehub.operations.port;
 
 /**
- * Port gửi Email bất đồng bộ qua Mail Helper của K1.
+ * Port for sending asynchronous emails via K1's Mail Helper.
  */
 public interface NotificationMailPort {
 

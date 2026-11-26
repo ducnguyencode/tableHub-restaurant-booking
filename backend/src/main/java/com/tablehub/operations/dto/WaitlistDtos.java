@@ -11,16 +11,16 @@ public final class WaitlistDtos {
     private WaitlistDtos() {}
 
     public record CreateWaitlistRequest(
-        @NotBlank(message = "Tên khách hàng chờ bàn là bắt buộc")
+        @NotBlank(message = "Contact name is required for waitlist")
         @Size(max = 120)
         String contactName,
 
-        @NotBlank(message = "Số điện thoại khách chờ bàn là bắt buộc")
+        @NotBlank(message = "Contact phone is required for waitlist")
         @Size(max = 30)
         String contactPhone,
 
         @NotNull
-        @Min(value = 1, message = "Số khách phải >= 1")
+        @Min(value = 1, message = "Guest count must be >= 1")
         Integer guestCount,
 
         @Size(max = 255)
@@ -28,7 +28,7 @@ public final class WaitlistDtos {
     ) {}
 
     public record SeatWaitlistRequest(
-        @NotNull(message = "Cần ID lượt đặt bàn WALK_IN vừa tạo để liên kết")
+        @NotNull(message = "Seated WALK_IN reservation ID is required")
         Long seatedReservationId
     ) {}
 
