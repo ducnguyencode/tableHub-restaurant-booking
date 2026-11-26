@@ -242,7 +242,7 @@ Mọi tính năng của Khách hàng và Nhà hàng đều giao tiếp qua JSON 
 #### Phase 2: Luồng Đặt bàn & Vận hành Bàn Xuyên suốt (`Core End-to-End`)
 - **`P2-T1` (K2):** API & UI Đăng ký nhà hàng, Quản lý hồ sơ/ảnh/thương hiệu, Trang danh sách & chi tiết nhà hàng công khai (tích hợp bản đồ tọa độ & tìm kiếm lọc đa tiêu chí).
 - **`P2-T2` (K4):** API & UI Quản lý Sơ đồ bàn (`DINING_TABLES`), Ca mở cửa nhiều ca/ngày (`OPENING_HOURS`), Lịch ngày Lễ/Đóng cửa đột xuất (`SPECIAL_SCHEDULES`) và Mời nhân viên qua Email (`STAFF_INVITATIONS`).
-- **`P2-T3` (K3):** API tính slot trống `availability` + Động cơ đặt bàn `ONLINE` (tự xếp bàn theo `min_party_size`, khóa `PESSIMISTIC_WRITE` chống trùng, kiểm tra chống spam & uy tín `no_show_count_30d`) + টেস্ট đồng thời 20 luồng.
+- **`P2-T3` (K3):** API tính slot trống `availability` + Động cơ đặt bàn `ONLINE` (tự xếp bàn theo `min_party_size`, khóa `PESSIMISTIC_WRITE` chống trùng, kiểm tra chống spam & uy tín `no_show_count_30d`) + test đồng thời 20 luồng.
 - **`P2-T4` (K3 + K4):** API & UI Màn hình Điều phối Lịch bàn Realtime trong ngày: tạo `WALK_IN`, quét `qr_token` Check-in, Ghép nhiều bàn, Đổi bàn khi `Overstay`, Gia hạn giờ, Hoàn tất, No-show + Hàng chờ `WAITLIST` tại quầy.
 - **`P2-T5` (K5):** API & UI Admin duyệt/từ chối/tạm ngưng nhà hàng (kèm kiểm tra điều kiện đủ bàn/giờ) và khóa/mở tài khoản.
 
